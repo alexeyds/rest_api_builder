@@ -1,5 +1,6 @@
 require 'rest-client'
 require 'rest_api_builder/url_helper'
+require 'rest_api_builder/rest_client_response_parser'
 
 module RestAPIBuilder
   class RequestSingleton
@@ -10,6 +11,7 @@ module RestAPIBuilder
         raise ArgumentError, 'GET requests do not support body'
       end
 
+      response_parser = RestAPIBuilder::RestClientResponseParser.new(logger: logger)
       headers = headers.merge(params: query) if query
 
       begin
@@ -21,19 +23,12 @@ module RestAPIBuilder
           headers: headers,
           log: logger
         )
-        parse_response(response, success: true, logger: logger)
+        response_parser.parse_response(response, success: true)
       rescue RestClient::RequestFailed => e
         raise e unless e.response
 
-        parse_response(e.response, success: false, logger: logger)
+        response_parser.parse_response(e.response, success: false)
       end
-    end
-
-    private
-
-    def parse_response(response, success:, logger:)
-      logger << "# => Response body: #{response.body}" if logger
-      { success: success, status: response.code, body: response.body, headers: response.headers }
     end
   end
 
