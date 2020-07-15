@@ -1,2 +1,1 @@
-module RestAPIBuilder
-end
+require 'rest_api_builder/request'

@@ -1,3 +1,6 @@
+AllCops:
+  NewCops: enable
+
 Style/WordArray:
   Enabled: false
 
@@ -11,4 +14,16 @@ Style/Documentation:
   Enabled: false
 
 Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Style/IfUnlessModifier:
   Enabled: false
