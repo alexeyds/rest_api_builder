@@ -86,6 +86,48 @@ describe RestAPIBuilder::Request do
     end
   end
 
+  describe '#json_execute' do
+    it 'behaves like #execute' do
+      stub_request(:get, 'test.com').to_return(body: 'hi')
+      result = request.json_execute(base_url: 'test.com', method: :get)
+
+      assert_equal(true, result[:success])
+      assert_equal(200, result[:status])
+      assert_equal('hi', result[:body])
+    end
+
+    it 'parses JSON response body' do
+      stub_request(:get, 'test.com').to_return(body: "{\"a\":1}")
+      result = request.json_execute(base_url: 'test.com', method: :get)
+
+      assert_equal({ "a" => 1 }, result[:body])
+    end
+
+    it 'adds content-type header to request' do
+      stub_request(:get, 'test.com')
+        .with(headers: { 'Content-Type' => 'application/json' })
+      result = request.json_execute(base_url: 'test.com', method: :get)
+
+      assert_equal(true, result[:success])
+    end
+
+    it 'respects other headers' do
+      stub_request(:get, 'test.com')
+        .with(headers: { 'Content-Type' => 'application/json', 'X-Test' => true })
+      result = request.json_execute(base_url: 'test.com', method: :get, headers: { 'X-Test' => true })
+
+      assert_equal(true, result[:success])
+    end
+
+    it 'encodes request body' do
+      stub_request(:post, 'test.com')
+        .with(body: "{\"a\":1}")
+      result = request.json_execute(base_url: 'test.com', method: :post, body: { a: 1 })
+
+      assert_equal(true, result[:success])
+    end
+  end
+
   def request
     RestAPIBuilder::Request
   end

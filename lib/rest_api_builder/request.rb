@@ -6,6 +6,12 @@ module RestAPIBuilder
   class RequestSingleton
     include RestAPIBuilder::UrlHelper
 
+    def json_execute(headers: {}, body: nil, **options)
+      headers = headers.merge(content_type: :json)
+      body &&= JSON.generate(body)
+      execute(**options, parse_json: true, headers: headers, body: body)
+    end
+
     def execute(
       base_url:,
       method:,
