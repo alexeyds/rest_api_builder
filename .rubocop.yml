@@ -27,3 +27,6 @@ Metrics/BlockLength:
 
 Style/IfUnlessModifier:
   Enabled: false
+
+Naming/AccessorMethodName:
+  Enabled: false
