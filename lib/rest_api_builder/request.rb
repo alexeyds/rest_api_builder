@@ -32,12 +32,12 @@ module RestAPIBuilder
 
       begin
         response = RestClient::Request.execute(
-          **rest_client_options,
           method: method,
           url: full_url(base_url, path),
           payload: body,
           headers: headers,
-          log: logger
+          log: logger,
+          **rest_client_options
         )
         response_parser.parse_response(response, success: true)
       rescue RestClient::RequestFailed => e

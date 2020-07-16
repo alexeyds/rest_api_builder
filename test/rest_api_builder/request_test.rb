@@ -78,6 +78,11 @@ describe RestAPIBuilder::Request do
       request.execute(method: :get, base_url: 'test.com', rest_client_options: { timeout: 0, verify_ssl: false })
     end
 
+    it 'allows overwriting any option with :rest_client_options' do
+      stub_request(:get, 'example.com')
+      request.execute(method: :get, base_url: 'test.com', rest_client_options: { url: 'example.com' })
+    end
+
     it 'has :parse_json parameter' do
       stub_request(:get, 'test.com').to_return(body: "{\"a\":1}")
       result = request.execute(method: :get, base_url: 'test.com', parse_json: true)
