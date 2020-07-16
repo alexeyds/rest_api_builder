@@ -6,6 +6,11 @@ module RestAPIBuilder
     include WebMock::API
     include RestAPIBuilder::UrlHelper
 
+    def expect_json_execute(response_body: nil, **options)
+      response_body &&= JSON.generate(response_body)
+      expect_execute(**options, response_body: response_body)
+    end
+
     def expect_execute(
       base_url:,
       method:,
@@ -19,6 +24,7 @@ module RestAPIBuilder
       should_timeout: false
     )
       request = stub_request(method, full_url(base_url, path))
+
       add_request_expectations(request, { body: request_body, query: query, headers: request_headers })
 
       if should_timeout

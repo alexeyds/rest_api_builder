@@ -79,6 +79,24 @@ describe RestAPIBuilder::WebMockRequestExpectations do
     end
   end
 
+  describe '#expect_json_execute' do
+    it 'behaves like expect_execute' do
+      expectations.expect_json_execute(**get_test)
+      result = request.json_execute(**get_test)
+
+      assert_equal(true, result[:success])
+      assert_equal(200, result[:status])
+      assert_equal('', result[:body])
+    end
+
+    it 'converts response_body to json' do
+      expectations.expect_json_execute(**get_test, response_body: { a: 1 })
+      result = request.json_execute(**get_test)
+
+      assert_equal({ 'a' => 1 }, result[:body])
+    end
+  end
+
   def get_test
     { base_url: 'test.com', method: :get }
   end
