@@ -8,9 +8,16 @@ module RestAPIBuilder
     end
 
     def parse_response(response, success:)
-      @logger << "# => Response body: #{response.body}" if @logger
       body = @parse_json ? parse_json(response.body) : response.body
-      { success: success, status: response.code, body: body, headers: response.headers }
+      result = {
+        success: success,
+        status: response.code,
+        body: body,
+        headers: response.headers
+      }
+      maybe_log_result(result)
+
+      result
     end
 
     private
@@ -19,6 +26,10 @@ module RestAPIBuilder
       JSON.parse(json)
     rescue JSON::ParserError
       json
+    end
+
+    def maybe_log_result(result)
+      @logger && @logger << "# => Response: #{result}"
     end
   end
 end
