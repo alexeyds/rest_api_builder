@@ -9,10 +9,10 @@ Gem::Specification.new do |s|
   s.license     = 'MIT'
   s.homepage    = 'https://github.com/alexeyds/rest_api_builder'
 
-  s.add_development_dependency('rubocop', '>= 0.8')
-  s.add_development_dependency('webmock', '>= 3.0')
+  s.add_development_dependency('rubocop', '~> 0.8')
+  s.add_development_dependency('webmock', '~> 3.0')
 
-  s.add_dependency('rest-client', '>= 2.0')
+  s.add_dependency('rest-client', '~> 2.0')
 
   s.required_ruby_version = '>= 2.4.0'
 end
