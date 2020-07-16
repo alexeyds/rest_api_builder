@@ -56,5 +56,34 @@ describe "RestAPIBuilder README Examples" do
       assert_equal 404, response[:status]
       assert_equal "not found", response[:body]
     end
+
+    it 'has :request/:response expectation details example' do
+      Expectations.expect_execute(
+        base_url: "test.com",
+        method: :post,
+        response: { body: 'hello' },
+        request: { body: WebMock::API.hash_including({ foo: "bar" }) }
+      )
+
+      response = Request.json_execute(base_url: "test.com", method: :post, body: { foo: "bar" })
+
+      assert_equal true, response[:success]
+      assert_equal 'hello', response[:body]
+
+      assert_raises WebMock::NetConnectNotAllowedError do
+        Request.json_execute(base_url: "test.com", method: :post, body: { bar: "baz" })
+      end
+    end
+
+    it 'has #expect_json_execute example' do
+      Expectations.expect_json_execute(
+        base_url: "test.com",
+        method: :get,
+        response: { body: { hi: 'hello' } }
+      )
+      response = Request.execute(base_url: "test.com", method: :get)
+      assert_equal true, response[:success]
+      assert_equal "{\"hi\":\"hello\"}", response[:body]
+    end
   end
 end

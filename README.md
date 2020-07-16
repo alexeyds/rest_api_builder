@@ -84,7 +84,7 @@ response[:status]  #=> 200
 response[:body]    #=> ''
 response[:headers] #=> {}
 
-# Specifying response details
+# Specifying expectation details with WebMock::Request methods
 Expectations
   .expect_execute(base_url: "test.com", method: :get)
   .to_return(status: 404, body: "not found")
@@ -93,6 +93,29 @@ response = Request.execute(base_url: "test.com", method: :get)
 response[:success] #=> false
 response[:status]  #=> 404
 response[:body]    #=> "not found"
+
+# Specifying expectation details with :request and :response options
+Expectations.expect_execute(
+  base_url: "test.com", 
+  method: :post, 
+  response: { body: 'hello' }, 
+  request: { body: WebMock::API.hash_including({foo: "bar"}) }
+)
+response = Request.json_execute(base_url: "test.com", method: :post, body: {foo: "bar"})
+response[:success] #=> true
+response[:body]    #=> 'hello'
+
+Request.json_execute(base_url: "test.com", method: :post, body: {bar: "baz"}) # => Raises WebMock::NetConnectNotAllowedError
+
+# Using #expect_json_execute
+Expectations.expect_json_execute(
+  base_url: "test.com", 
+  method: :get, 
+  response: { body: {hi: 'hello'} }
+)
+response = Request.execute(base_url: "test.com", method: :get)
+response[:success] #=> true
+response[:body]    #=> "{\"hi\":\"hello\"}"
 ```
 
 ## Request API
@@ -127,6 +150,11 @@ Defines a request expectation using WebMock's `stub_request`. Returns an instanc
 * **base_url**: Base URL of the request. Required.
 * **method**: HTTP method of the request(e.g :get, :post, :patch). Required.
 * **path**: Path to be appended to the :base_url. Optional.
+* **request**: request details which will be passed to `WebMock::RequestStub#with` if provided. Optional
+* **response**: response details which will be passed to `WebMock::RequestStub#to_return` if provided. Optional
+
+### RestAPIBuilder::WebMockRequestExpectations.expect_json_execute(options)
+A convenience shortcut for `#json_execute` which will convert `request[:body]` to JSON if it's provided
 
 ## License
 MIT
