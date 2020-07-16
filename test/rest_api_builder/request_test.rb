@@ -77,6 +77,13 @@ describe RestAPIBuilder::Request do
       stub_request(:get, 'test.com')
       request.execute(method: :get, base_url: 'test.com', rest_client_options: { timeout: 0, verify_ssl: false })
     end
+
+    it 'has :parse_json parameter' do
+      stub_request(:get, 'test.com').to_return(body: "{\"a\":1}")
+      result = request.execute(method: :get, base_url: 'test.com', parse_json: true)
+
+      assert_equal({ "a" => 1 }, result[:body])
+    end
   end
 
   def request

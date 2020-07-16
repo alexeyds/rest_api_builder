@@ -2,7 +2,7 @@ require 'json'
 
 module RestAPIBuilder
   class RestClientResponseParser
-    def initialize(logger: nil, parse_json: false)
+    def initialize(logger:, parse_json:)
       @logger = logger
       @parse_json = parse_json
     end

@@ -48,7 +48,7 @@ describe RestAPIBuilder::RestClientResponseParser do
     RestClient.get('test.com')
   end
 
-  def init_parser(options = {})
-    RestAPIBuilder::RestClientResponseParser.new(**options)
+  def init_parser(logger: nil, parse_json: false)
+    RestAPIBuilder::RestClientResponseParser.new(logger: logger, parse_json: parse_json)
   end
 end

@@ -6,12 +6,22 @@ module RestAPIBuilder
   class RequestSingleton
     include RestAPIBuilder::UrlHelper
 
-    def execute(base_url:, method:, body: nil, headers: {}, query: nil, path: nil, logger: nil, rest_client_options: {})
+    def execute(
+      base_url:,
+      method:,
+      body: nil,
+      headers: {},
+      query: nil,
+      path: nil,
+      logger: nil,
+      parse_json: false,
+      rest_client_options: {}
+    )
       if method == :get && body
         raise ArgumentError, 'GET requests do not support body'
       end
 
-      response_parser = RestAPIBuilder::RestClientResponseParser.new(logger: logger)
+      response_parser = RestAPIBuilder::RestClientResponseParser.new(logger: logger, parse_json: parse_json)
       headers = headers.merge(params: query) if query
 
       begin
