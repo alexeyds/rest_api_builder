@@ -2,7 +2,7 @@ Gem::Specification.new do |s|
   s.name        = 'rest_api_builder'
   s.version     = '0.0.1'
   s.summary     = "A simple wrapper for rest-client"
-  s.description = "A simple wrapper for rest-client made to aid in the creation and testing of API clients"
+  s.description = "A simple wrapper for rest-client aiming to make creation and testing of API clients easier."
   s.authors     = ["Alexey D"]
   s.email       = 'ord.alwo@gmail.com'
   s.files       = Dir["LICENSE", "README.md", "rest_api_builder.gemspec", "lib/**/*"]
