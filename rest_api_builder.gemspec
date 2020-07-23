@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'rest_api_builder'
-  s.version     = '0.0.2'
+  s.version     = '0.0.3'
   s.summary     = "A simple wrapper for rest-client"
   s.description = "A simple wrapper for rest-client aiming to make creation and testing of API clients easier."
   s.authors     = ["Alexey D"]
