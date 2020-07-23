@@ -29,7 +29,7 @@ module RestAPIBuilder
     end
 
     def maybe_log_result(result)
-      @logger && @logger << "# => Response: #{result}"
+      @logger && @logger << "# => Response: #{result}\n"
     end
   end
 end
