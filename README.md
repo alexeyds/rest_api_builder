@@ -133,6 +133,7 @@ Does not throw on non-200 responses like RestClient does, but will throw on any 
 * **query**: Query hash to be appended to the resulting url. Optional.
 * **logger**: A `Logger` instance to be passed to RestClient in `log` option. Will also log response details as RestClient does not do this by default. Optional
 * **parse_json**: Boolean. If `true`, will attempt to parse the response body as JSON. Will return the response body unchanged if it does not contain valid JSON. `false` by default.
+* **raw_response**: Boolean. If `true`, the response returned by RestClient will not be parsed into {:status, :body, :headers}, but instead returned as {:raw_response}. `false` by default.
 * **rest_client_options**: Any additional options to be passed to `RestClient::Request.execute` unchanged. **Any option set here will completely overwrite all custom options**. For example, if you call `RestAPIBuilder::Request.execute(method: :post, rest_client_options: {method: :get})`, the resulting request will be sent as GET. Optional.
 
 ### RestAPIBuilder::Request.json_execute(options)

@@ -89,6 +89,15 @@ describe RestAPIBuilder::Request do
 
       assert_equal({ "a" => 1 }, result[:body])
     end
+
+    it 'has :raw_response parameter' do
+      stub_request(:get, 'test.com')
+      result = request.execute(method: :get, base_url: 'test.com', raw_response: true)
+
+      raw_response = result[:raw_response]
+      assert_equal(200, raw_response.code)
+      assert_equal('', raw_response.body)
+    end
   end
 
   describe '#json_execute' do

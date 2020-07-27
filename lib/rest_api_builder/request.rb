@@ -21,13 +21,18 @@ module RestAPIBuilder
       path: nil,
       logger: nil,
       parse_json: false,
+      raw_response: false,
       rest_client_options: {}
     )
       if method == :get && body
         raise ArgumentError, 'GET requests do not support body'
       end
 
-      response_parser = RestAPIBuilder::RestClientResponseParser.new(logger: logger, parse_json: parse_json)
+      response_parser = RestAPIBuilder::RestClientResponseParser.new(
+        logger: logger,
+        parse_json: parse_json,
+        raw_response: raw_response
+      )
       headers = headers.merge(params: query) if query
 
       begin

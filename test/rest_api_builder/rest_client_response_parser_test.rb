@@ -41,6 +41,15 @@ describe RestAPIBuilder::RestClientResponseParser do
 
       assert_equal("foo", result[:body])
     end
+
+    it 'returns raw response if :raw_response is true' do
+      parser = init_parser(raw_response: true)
+      result = parser.parse_response(build_response(body: "foo"), success: true)
+
+      assert_equal(true, result[:success])
+      refute_nil(result[:raw_response])
+      refute_nil(result[:raw_response].headers)
+    end
   end
 
   def build_response(body: nil, headers: nil)
@@ -48,7 +57,7 @@ describe RestAPIBuilder::RestClientResponseParser do
     RestClient.get('test.com')
   end
 
-  def init_parser(logger: nil, parse_json: false)
-    RestAPIBuilder::RestClientResponseParser.new(logger: logger, parse_json: parse_json)
+  def init_parser(logger: nil, parse_json: false, raw_response: false)
+    RestAPIBuilder::RestClientResponseParser.new(logger: logger, parse_json: parse_json, raw_response: raw_response)
   end
 end
