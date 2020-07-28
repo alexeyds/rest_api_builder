@@ -1,11 +1,7 @@
 require 'rest-client'
-require 'rest_api_builder/url_helper'
-require 'rest_api_builder/rest_client_response_parser'
 
 module RestAPIBuilder
   class RequestSingleton
-    include RestAPIBuilder::UrlHelper
-
     def json_execute(headers: {}, body: nil, **options)
       headers = headers.merge(content_type: :json)
       body &&= JSON.generate(body)
@@ -33,23 +29,15 @@ module RestAPIBuilder
         path: path
       )
 
-      response_parser = RestAPIBuilder::RestClientResponseParser.new(
-        logger: logger,
-        parse_json: parse_json,
-        raw_response: raw_response
-      )
+      response_handler = ResponseHandler.new
+      execute_request = proc { RestClient::Request.execute(**options, log: logger, **rest_client_options) }
 
-      begin
-        response = RestClient::Request.execute(
-          **options,
-          log: logger,
-          **rest_client_options
-        )
-        response_parser.parse_response(response, success: true)
-      rescue RestClient::RequestFailed => e
-        raise e unless e.response
-
-        response_parser.parse_response(e.response, success: false)
+      if parse_json
+        response_handler.handle_json_response(logger: logger, &execute_request)
+      elsif raw_response
+        response_handler.handle_response_error(&execute_request)
+      else
+        response_handler.handle_response(logger: logger, &execute_request)
       end
     end
   end
