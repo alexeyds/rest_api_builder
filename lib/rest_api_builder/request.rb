@@ -24,23 +24,24 @@ module RestAPIBuilder
       raw_response: false,
       rest_client_options: {}
     )
-      if method == :get && body
-        raise ArgumentError, 'GET requests do not support body'
-      end
+      options = RequestOptions.new.compose(
+        base_url: base_url,
+        method: method,
+        body: body,
+        headers: headers,
+        query: query,
+        path: path
+      )
 
       response_parser = RestAPIBuilder::RestClientResponseParser.new(
         logger: logger,
         parse_json: parse_json,
         raw_response: raw_response
       )
-      headers = headers.merge(params: query) if query
 
       begin
         response = RestClient::Request.execute(
-          method: method,
-          url: full_url(base_url, path),
-          payload: body,
-          headers: headers,
+          **options,
           log: logger,
           **rest_client_options
         )
