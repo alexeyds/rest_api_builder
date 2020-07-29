@@ -3,14 +3,32 @@ require "rest_api_builder"
 require "rest_api_builder/webmock_request_expectations"
 
 describe "RestAPIBuilder README Examples" do
-  Request = RestAPIBuilder::Request
+  class MyRequest
+    include RestAPIBuilder
+
+    def execute(options)
+      handle_response do
+        RestClient::Request.execute(compose_request_options(**options))
+      end
+    end
+
+    def json_execute(options)
+      handle_json_response do
+        RestClient::Request.execute(compose_json_request_options(**options))
+      end
+    end
+  end
+
+  def my_request
+    MyRequest.new
+  end
 
   describe "Usage" do
     before { WebMock.allow_net_connect! }
     after { WebMock.disable_net_connect! }
 
     it 'has simple request example' do
-      response = Request.execute(base_url: "example.com", method: :get)
+      response = my_request.execute(base_url: "example.com", method: :get)
 
       assert_equal true, response[:success]
       assert_equal 200, response[:status]
@@ -19,7 +37,7 @@ describe "RestAPIBuilder README Examples" do
     end
 
     it 'has non-200 response example' do
-      response = Request.execute(base_url: "example.com", path: "/foo", method: :get)
+      response = my_request.execute(base_url: "example.com", path: "/foo", method: :get)
 
       assert_equal false, response[:success]
       assert_equal 404, response[:status]
@@ -27,7 +45,7 @@ describe "RestAPIBuilder README Examples" do
     end
 
     it 'has json example' do
-      response = Request.json_execute(base_url: "api.github.com", path: "/users/octocat/orgs", method: :get)
+      response = my_request.json_execute(base_url: "api.github.com", path: "/users/octocat/orgs", method: :get)
 
       assert_equal true, response[:success]
       assert_kind_of Array, response[:body]
@@ -35,10 +53,11 @@ describe "RestAPIBuilder README Examples" do
   end
 
   Expectations = RestAPIBuilder::WebMockRequestExpectations
+
   describe 'WebMock expectations' do
     it 'has simple expectation example' do
       Expectations.expect_execute(base_url: "test.com", method: :get)
-      response = Request.execute(base_url: "test.com", method: :get)
+      response = my_request.execute(base_url: "test.com", method: :get)
 
       assert_equal true, response[:success]
       assert_equal 200, response[:status]
@@ -50,7 +69,7 @@ describe "RestAPIBuilder README Examples" do
       Expectations
         .expect_execute(base_url: "test.com", method: :get)
         .to_return(status: 404, body: "not found")
-      response = Request.execute(base_url: "test.com", method: :get)
+      response = my_request.execute(base_url: "test.com", method: :get)
 
       assert_equal false, response[:success]
       assert_equal 404, response[:status]
@@ -65,13 +84,13 @@ describe "RestAPIBuilder README Examples" do
         request: { body: WebMock::API.hash_including({ foo: "bar" }) }
       )
 
-      response = Request.json_execute(base_url: "test.com", method: :post, body: { foo: "bar" })
+      response = my_request.json_execute(base_url: "test.com", method: :post, body: { foo: "bar" })
 
       assert_equal true, response[:success]
       assert_equal 'hello', response[:body]
 
       assert_raises WebMock::NetConnectNotAllowedError do
-        Request.json_execute(base_url: "test.com", method: :post, body: { bar: "baz" })
+        my_request.json_execute(base_url: "test.com", method: :post, body: { bar: "baz" })
       end
     end
 
@@ -81,7 +100,7 @@ describe "RestAPIBuilder README Examples" do
         method: :get,
         response: { body: { hi: 'hello' } }
       )
-      response = Request.execute(base_url: "test.com", method: :get)
+      response = my_request.execute(base_url: "test.com", method: :get)
       assert_equal true, response[:success]
       assert_equal "{\"hi\":\"hello\"}", response[:body]
     end
