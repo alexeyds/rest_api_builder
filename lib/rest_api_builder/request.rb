@@ -32,10 +32,10 @@ module RestAPIBuilder
       response_handler = ResponseHandler.new
       execute_request = proc { RestClient::Request.execute(**options, log: logger, **rest_client_options) }
 
-      if parse_json
-        response_handler.handle_json_response(logger: logger, &execute_request)
-      elsif raw_response
+      if raw_response
         response_handler.handle_response_error(&execute_request)
+      elsif parse_json
+        response_handler.handle_json_response(logger: logger, &execute_request)
       else
         response_handler.handle_response(logger: logger, &execute_request)
       end
