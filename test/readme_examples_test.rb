@@ -1,26 +1,11 @@
 require "test_helper"
 require "rest_api_builder"
+require "./test/support/example_request"
 require "rest_api_builder/webmock_request_expectations"
 
 describe "RestAPIBuilder README Examples" do
-  class MyRequest
-    include RestAPIBuilder
-
-    def execute(options)
-      handle_response do
-        RestClient::Request.execute(compose_request_options(**options))
-      end
-    end
-
-    def json_execute(options)
-      handle_json_response do
-        RestClient::Request.execute(compose_json_request_options(**options))
-      end
-    end
-  end
-
   def my_request
-    MyRequest.new
+    RestAPIBuilder::ExampleRequest.new
   end
 
   describe "Usage" do

@@ -1,5 +1,4 @@
 require 'forwardable'
-require 'rest_api_builder/request'
 require 'rest_api_builder/request_options'
 require 'rest_api_builder/response_handler'
 

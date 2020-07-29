@@ -1,7 +1,13 @@
 require "test_helper"
+require "rest_api_builder"
+require "./test/support/example_request"
 require "rest_api_builder/webmock_request_expectations"
 
 describe RestAPIBuilder::WebMockRequestExpectations do
+  def request
+    RestAPIBuilder::ExampleRequest.new
+  end
+
   describe "#expect_request" do
     it 'defines basic expectation for request' do
       expectations.expect_execute(**get_test)
@@ -82,10 +88,6 @@ describe RestAPIBuilder::WebMockRequestExpectations do
 
   def post_test
     { base_url: 'test.com', method: :post }
-  end
-
-  def request
-    RestAPIBuilder::Request
   end
 
   def expectations

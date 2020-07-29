@@ -1,3 +1,5 @@
+require 'rest-client'
+
 module RestAPIBuilder
   class ResponseHandler
     def handle_json_response(**options, &block)
