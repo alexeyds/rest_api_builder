@@ -132,9 +132,9 @@ Expectations.expect_execute(
   base_url: "test.com", 
   method: :post, 
   response: { body: 'hello' }, 
-  request: { body: WebMock::API.hash_including({foo: "bar"}) }
+  request: { body: { foo: "bar" } } # body will be matched partially using hash_including matcher
 )
-response = my_request.json_execute(base_url: "test.com", method: :post, body: {foo: "bar"})
+response = my_request.json_execute(base_url: "test.com", method: :post, body: { foo: "bar", bar: "baz" })
 response[:success] #=> true
 response[:body]    #=> 'hello'
 
@@ -184,13 +184,13 @@ Returns ruby hash with `:success` and `:raw_response` keys.
 
 ## WebMockRequestExpectations API
 ### RestAPIBuilder::WebMockRequestExpectations.expect_execute(options)
-Defines a request expectation using WebMock's `stub_request`. Returns an instance of `WebMock::RequestStub` on which methods such as `with`, `to_return`, `to_timeout` can be called
+Defines a request expectation using WebMock's `stub_request`. Returns an instance of `WebMock::RequestStub` on which methods such as `with`, `to_return`, `to_timeout` can be called.
 
 #### Options:
 * **base_url**: Base URL of the request. Required.
 * **method**: HTTP method of the request(e.g :get, :post, :patch). Required.
 * **path**: Path to be appended to the :base_url. Optional.
-* **request**: request details which will be passed to `WebMock::RequestStub#with` if provided. Optional
+* **request**: request details which will be passed to `WebMock::RequestStub#with` if provided. If `query` or `body` keys are present and are hashes, they will be converted into WebMock's `hash_including` matcher. Optional
 * **response**: response details which will be passed to `WebMock::RequestStub#to_return` if provided. Optional
 
 ### RestAPIBuilder::WebMockRequestExpectations.expect_json_execute(options)

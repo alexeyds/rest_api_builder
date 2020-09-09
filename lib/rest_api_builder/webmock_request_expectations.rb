@@ -17,10 +17,26 @@ module RestAPIBuilder
     def expect_execute(base_url:, method:, path: nil, request: nil, response: nil)
       expectation = stub_request(method, full_url(base_url, path))
 
-      expectation.with(request) if request
+      if !request.nil? && request.any?
+        add_request_expectations(expectation, request)
+      end
+
       expectation.to_return(response) if response
 
       expectation
+    end
+
+    def add_request_expectations(expectation, request)
+      if request[:body].is_a?(Hash)
+        request = request.merge(body: hash_including(request[:body]))
+      end
+
+      if request[:query].is_a?(Hash)
+        query = request[:query].transform_values(&:to_s)
+        request = request.merge(query: hash_including(query))
+      end
+
+      expectation.with(request)
     end
   end
 

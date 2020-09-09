@@ -66,10 +66,10 @@ describe "RestAPIBuilder README Examples" do
         base_url: "test.com",
         method: :post,
         response: { body: 'hello' },
-        request: { body: WebMock::API.hash_including({ foo: "bar" }) }
+        request: { body: { foo: "bar" } } # body will be matched partially using hash_including matcher
       )
 
-      response = my_request.json_execute(base_url: "test.com", method: :post, body: { foo: "bar" })
+      response = my_request.json_execute(base_url: "test.com", method: :post, body: { foo: "bar", bar: "baz" })
 
       assert_equal true, response[:success]
       assert_equal 'hello', response[:body]
