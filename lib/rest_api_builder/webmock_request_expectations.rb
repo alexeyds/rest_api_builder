@@ -15,7 +15,8 @@ module RestAPIBuilder
     end
 
     def expect_execute(base_url:, method:, path: nil, request: nil, response: nil)
-      expectation = stub_request(method, full_url(base_url, path))
+      url = path.is_a?(Regexp) ? /#{base_url}#{path}/ : full_url(base_url, path)
+      expectation = stub_request(method, url)
 
       if !request.nil? && request.any?
         add_request_expectations(expectation, request)

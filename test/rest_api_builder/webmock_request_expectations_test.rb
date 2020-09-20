@@ -84,6 +84,13 @@ describe RestAPIBuilder::WebMockRequestExpectations do
 
       assert_equal(true, result[:success])
     end
+
+    it 'works with regex path' do
+      expectations.expect_execute(**get_test, path: %r{/test/\d+})
+      result = request.execute(**get_test, path: '/test/31')
+
+      assert_equal(true, result[:success])
+    end
   end
 
   describe '#expect_json_execute' do
