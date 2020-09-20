@@ -13,7 +13,7 @@ describe "RestAPIBuilder README Examples" do
     after { WebMock.disable_net_connect! }
 
     it 'has simple request example' do
-      response = my_request.execute(base_url: "example.com", method: :get)
+      response = my_request.execute(base_url: "api.github.com", method: :get)
 
       assert_equal true, response[:success]
       assert_equal 200, response[:status]
@@ -22,7 +22,7 @@ describe "RestAPIBuilder README Examples" do
     end
 
     it 'has non-200 response example' do
-      response = my_request.execute(base_url: "example.com", path: "/foo", method: :get)
+      response = my_request.execute(base_url: "api.github.com", path: "/foo", method: :get)
 
       assert_equal false, response[:success]
       assert_equal 404, response[:status]
