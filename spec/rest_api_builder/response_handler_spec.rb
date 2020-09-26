@@ -1,4 +1,4 @@
-require "test_helper"
+require "spec_helper"
 require "rest_api_builder"
 
 describe RestAPIBuilder::ResponseHandler do
@@ -15,24 +15,24 @@ describe RestAPIBuilder::ResponseHandler do
       stub_request(:get, 'test.com')
       result = handle_test_response
 
-      assert_equal(true, result[:success])
-      assert_equal(200, result[:raw_response].code)
+      expect(result[:success]).to eq(true)
+      expect(result[:raw_response].code).to eq(200)
     end
 
     it 'handles non-200 responses' do
       stub_request(:get, 'test.com').to_return(body: 'hi', status: 404)
       result = handle_test_response
 
-      assert_equal(false, result[:success])
-      assert_equal(404, result[:raw_response].code)
+      expect(result[:success]).to eq(false)
+      expect(result[:raw_response].code).to eq(404)
     end
 
     it 'throws if result has no response' do
       stub_request(:get, 'test.com').to_timeout
 
-      assert_raises RestClient::Exceptions::OpenTimeout do
+      expect do
         handle_test_response
-      end
+      end.to raise_error(RestClient::Exceptions::OpenTimeout)
     end
   end
 
@@ -47,20 +47,19 @@ describe RestAPIBuilder::ResponseHandler do
       stub_request(:get, 'test.com').to_return(body: 'hi', headers: { 'X-Test': 'Foobar' })
       result = handle_test_response
 
-      assert_equal(true, result[:success])
-      assert_equal(200, result[:status])
-      assert_equal('hi', result[:body])
-      assert_equal('Foobar', result[:headers][:x_test])
+      expect(result[:success]).to eq(true)
+      expect(result[:status]).to eq(200)
+      expect(result[:body]).to eq('hi')
+      expect(result[:headers][:x_test]).to eq('Foobar')
     end
 
     it 'logs response using provided :logger' do
       stub_request(:get, 'test.com')
 
-      logger = Minitest::Mock.new
-      logger.expect(:<<, true, [String])
+      logger = spy('logger')
       handle_test_response(logger: logger)
 
-      assert_mock logger
+      expect(logger).to have_received(:<<).with(String)
     end
   end
 
@@ -75,23 +74,23 @@ describe RestAPIBuilder::ResponseHandler do
       stub_request(:get, 'test.com').to_return(body: 'hi')
       result = handle_test_response
 
-      assert_equal(true, result[:success])
-      assert_equal(200, result[:status])
-      assert_equal('hi', result[:body])
+      expect(result[:success]).to eq(true)
+      expect(result[:status]).to eq(200)
+      expect(result[:body]).to eq('hi')
     end
 
     it 'parses response body as json' do
       stub_request(:get, 'test.com').to_return(body: "{\"a\":1}")
       result = handle_test_response
 
-      assert_equal({ "a" => 1 }, result[:body])
+      expect(result[:body]).to eq({ "a" => 1 })
     end
 
     it 'returns body as is if it cannot be parsed as json' do
       stub_request(:get, 'test.com').to_return(body: "foo")
       result = handle_test_response
 
-      assert_equal("foo", result[:body])
+      expect(result[:body]).to eq("foo")
     end
   end
 end
