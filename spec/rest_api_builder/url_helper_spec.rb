@@ -1,4 +1,4 @@
-require "test_helper"
+require "spec_helper"
 require "rest_api_builder/url_helper"
 
 describe RestAPIBuilder::UrlHelper do
@@ -6,11 +6,11 @@ describe RestAPIBuilder::UrlHelper do
 
   describe '#full_url' do
     it 'joins url with path' do
-      assert_equal('test.com/things', full_url('test.com/', '/things'))
+      expect(full_url('test.com/', '/things')).to eq('test.com/things')
     end
 
     it 'returns url if path is nil' do
-      assert_equal('test.com', full_url('test.com', nil))
+      expect(full_url('test.com', nil)).to eq('test.com')
     end
   end
 end
