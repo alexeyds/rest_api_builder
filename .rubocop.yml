@@ -30,3 +30,9 @@ Style/IfUnlessModifier:
 
 Naming/AccessorMethodName:
   Enabled: false
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Style/RegexpLiteral:
+  Enabled: false
