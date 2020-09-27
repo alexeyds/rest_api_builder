@@ -1,10 +1,10 @@
 require "spec_helper"
 require "rest_api_builder"
 
-describe RestAPIBuilder::RequestOptions do
-  include RestAPIBuilder
+describe RestAPIBuilder::Request::RequestOptions do
+  include RestAPIBuilder::Request
 
-  describe '#compose' do
+  describe '#compose_request_options' do
     def execute_request(**options)
       RestClient::Request.execute(compose_request_options(**options))
     end
@@ -51,12 +51,12 @@ describe RestAPIBuilder::RequestOptions do
     end
   end
 
-  describe '#compose_json' do
+  describe '#compose_json_request_options' do
     def execute_request(**options)
       RestClient::Request.execute(compose_json_request_options(**options))
     end
 
-    it 'behaves like #compose' do
+    it 'behaves like #compose_request_options' do
       stub_request(:get, 'test.com')
       execute_request(base_url: 'test.com', method: :get)
     end

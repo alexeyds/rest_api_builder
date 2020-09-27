@@ -1,8 +1,8 @@
 require "spec_helper"
 require "rest_api_builder"
 
-describe RestAPIBuilder::ResponseHandler do
-  include RestAPIBuilder
+describe RestAPIBuilder::Request::ResponseHandler do
+  include RestAPIBuilder::Request
 
   describe '#handle_response_error' do
     def handle_test_response
