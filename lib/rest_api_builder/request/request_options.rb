@@ -1,9 +1,9 @@
-require 'rest_api_builder/url_helper'
+require 'rest_api_builder/helpers/url_helper'
 
 module RestAPIBuilder
   module Request
     module RequestOptions
-      extend RestAPIBuilder::UrlHelper
+      extend RestAPIBuilder::Helpers::UrlHelper
 
       module_function
 

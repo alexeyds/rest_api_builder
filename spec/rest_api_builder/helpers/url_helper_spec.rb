@@ -1,8 +1,8 @@
 require "spec_helper"
-require "rest_api_builder/url_helper"
+require "rest_api_builder/helpers/url_helper"
 
-describe RestAPIBuilder::UrlHelper do
-  include RestAPIBuilder::UrlHelper
+describe RestAPIBuilder::Helpers::UrlHelper do
+  include RestAPIBuilder::Helpers::UrlHelper
 
   describe '#full_url' do
     it 'joins url with path' do

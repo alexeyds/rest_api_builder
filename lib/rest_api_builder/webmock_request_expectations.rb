@@ -1,10 +1,10 @@
 require 'webmock'
-require 'rest_api_builder/url_helper'
+require 'rest_api_builder/helpers/url_helper'
 
 module RestAPIBuilder
   class WebMockRequestExpectationsSingleton
     include WebMock::API
-    include RestAPIBuilder::UrlHelper
+    include RestAPIBuilder::Helpers::UrlHelper
 
     def expect_json_execute(response: nil, **options)
       if response && response[:body]
