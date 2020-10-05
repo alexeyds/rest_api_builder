@@ -8,193 +8,254 @@ RestClient is great, but after building a few API clients with it you will almos
 - Handling and extracting details from non-200 responses
 - Creating testing interfaces for your API clients
 
-This library's tries to solve these and similar issues by providing a set of helper methods to improve on [rest-client](https://github.com/rest-client/rest-client) features and an optional [webmock](https://github.com/bblimke/webmock) testing interface for it.
+This library tries to solve these and similar issues by providing a set of self-contained helper methods to improve on [rest-client](https://github.com/rest-client/rest-client) features including an optional [webmock](https://github.com/bblimke/webmock) testing interface.
 
 ## Installation
 ```
 gem install rest_api_builder
 ```
 
-## WebMock interface installation
-Simply require webmock interface before your test, for example in your `test_helper.rb`:
+## RestAPIBuilder::Request
+Main RestAPIBuilder module which includes various helper methods for parsing RestClient responses, catching errors and composing request options. `handle_*` and `compose_*` methods are intended to be used in conjunction, but you can use any of them in any combination without relying on the rest.
+
 ```rb
-  # test_helper.rb
-  require "webmock"
-  require "rest_api_builder/webmock_request_expectations"
+# Basic usage
+require 'rest_api_builder'
+include RestAPIBuilder::Request
 
-  WebMock.enable!
+logger = Logger.new(STDOUT)
+response = handle_json_response(logger: logger) do
+  RestClient::Request.execute(
+    {
+      **compose_json_request_options(
+        base_url: 'https://api.github.com',
+        path: '/users/octocat/orgs',
+        method: :get
+      ),
+      log: logger
+    }
+  )
+end
 
-  # my_spec.rb 
-  require 'test_helper'
-
-  describe 'my test' do
-    it 'performs a request' do
-      RestAPIBuilder::WebMockRequestExpectations.expect_execute(...).to_return(body: "hi!")
-      result = RestClient::Request.execute(...)
-
-      # some assertions
-    end
-  end
+response[:success] # => true
+response[:status]  # => 200
+response[:body]    # => []
 ```
 
-`RestAPIBuilder::WebMockRequestExpectations` expects that you have WebMock installed as a dependency.
+Included methods:
 
-## Usage
+### `#handle_response(options, &block)`
+Executes given block, expecting to receive RestClient::Response as a result.\
+Returns plain ruby hash with following keys: `:success, :status, :body, :headers`\
+This will gracefully handle non-200 responses, but will throw on any error without defined response(e.g server timeout)
+
 ```rb
-require "rest_api_builder"
+require 'rest_api_builder'
+include RestAPIBuilder::Request
 
-class MyRequest
-  include RestAPIBuilder
+# normal response
+response = handle_response do
+  RestClient::Request.execute(method: :get, url: 'https://api.github.com/users/octocat/orgs')
+end
 
-  def execute(options)
-    handle_response do
-      RestClient::Request.execute(compose_request_options(**options))
-    end
-  end
+response[:success] # => true
+response[:status]  # => 200
+response[:body]    # => '[]'
+response[:headers] # => {:accept_ranges=>"bytes", :access_control_allow_origin=>"*", ...}
 
-  def json_execute(options)
-    handle_json_response do
-      RestClient::Request.execute(compose_json_request_options(**options))
+# non-200 response that would result in RestClient::RequestFailed exception otherwise
+response = handle_response do
+  RestClient::Request.execute(method: :get, url: 'https://api.github.com/users/octocat/foobar')
+end
+
+response[:success] # => false
+response[:status]  # => 404
+response[:body]    # => "{\"message\":\"Not Found\",..."}"
+```
+
+#### Accepted Options:
+| Name   | Description |
+|--------|-------------|
+| logger | Any object with `<<` method, e.g `Logger` instance. Will be used to log *response* details in the same way that [RestClient's `log` option](https://github.com/rest-client/rest-client#logging) logs the request details. Optional |
+
+### `#handle_json_response(options, &block)`
+Behaves just like `#handle_response`, but will also attempt to decode response `:body`, returning it as is if a parsing error occurs.
+
+```rb
+require 'rest_api_builder'
+include RestAPIBuilder::Request
+
+# decodes JSON response body
+response = handle_json_response do
+  RestClient::Request.execute(method: :get, url: 'https://api.github.com/users/octocat/orgs')
+end
+
+response[:success] # => true
+response[:status]  # => 200
+response[:body]    # => []
+
+# returns body as is if it cannot be decoded
+response = handle_json_response do
+  RestClient::Request.execute(method: :get, url: 'https://github.com/foo/bar/test')
+end
+
+response[:success] # => false
+response[:status]  # => 404
+response[:body]    # => "Not Found"
+```
+
+### `handle_response_error(&block)`
+Low-level API.\
+You can use this method if you want to work with regular `RestClient::Response` objects directly(e.g when using `block_response` or `raw_response` options). This will handle non-200 exceptions but will not do anything else.\
+Returns plain ruby hash with `:success` and `:raw_response` keys.
+
+```rb
+require 'rest_api_builder'
+include RestAPIBuilder::Request
+
+# returns RestClient::Response as :raw_response
+response = handle_response_error do
+  RestClient::Request.execute(method: :get, url: 'https://api.github.com/users/octocat/orgs')
+end
+
+response[:success]      # => true
+response[:raw_response] # => <RestClient::Response 200 "[]">
+
+# handles non-200 responses
+response = handle_response_error do
+  RestClient::Request.execute(
+    method: :get,
+    url: 'https://api.github.com/users/octocat/foobar',
+    raw_response: true
+  )
+end
+
+response[:success]      # => false
+response[:raw_response] # => <RestClient::RawResponse @code=404, @file=#<Tempfile...>>
+```
+
+### `#compose_request_options(options)`
+Provides a more consistent interface for `RestClient::Request#execute`.\
+This method returns a hash of options which you can then pass to `RestClient::Request#execute`.
+
+```rb
+require 'rest_api_builder'
+include RestAPIBuilder::Request
+
+# basic usage
+response = RestClient::Request.execute(
+  compose_request_options(
+    base_url: 'https://api.github.com',
+    path: '/users/octocat/orgs',
+    method: :get
+  )
+)
+
+response.request.url # => "https://api.github.com/users/octocat/orgs"
+response.body        # => '[]'
+
+# advanced options
+result = handle_response_error do
+  RestClient::Request.execute(
+    compose_request_options(
+      base_url: 'https://api.github.com',
+      path: '/users/octocat/orgs',
+      method: :post,
+      body: 'Hello',
+      headers: { content_type: 'foobar' },
+      query: { foo: 'bar' }
+    )
+  )
+end
+request = result[:raw_response].request
+
+request.url          # => "https://api.github.com/users/octocat/orgs?foo=bar"
+request.headers      # => {:content_type=>"foobar"}
+request.payload.size # => 5 
+```
+
+#### Accepted Options:
+| Name     | Description |
+|----------|-------------|
+| base_url | Base URL of the request. Required. |
+| method   | HTTP method of the request(e.g :get, :post, :patch). Required. |
+| path     | Path to be appended to `base_url`. Optional. |
+| body     | Request Body. Optional. |
+| headers  | Request Headers. Optional. |
+| query    | Query hash to be appended to the resulting url. Optional. |
+
+### `#compose_json_request_options(options)`
+Same as `compose_request_options` but will also convert provided `body`(if any) to JSON and append `Content-Type: 'application/json'` to `headers`
+
+```rb
+require 'rest_api_builder'
+include RestAPIBuilder::Request
+
+# basic usage
+result = handle_response_error do
+  RestClient::Request.execute(
+    compose_json_request_options(
+      base_url: 'https://api.github.com',
+      path: '/users/octocat/orgs',
+      method: :post,
+      body: {a: 1}
+    )
+  )
+end
+request = result[:raw_response].request
+
+request.headers      # => {:content_type=>:json}
+request.payload.size # => 7
+```
+
+## RestAPIBuilder::APIClient
+
+### `#define_resource_shortcuts(resources, resources_scope:, init_with:)`
+Dynamically defines attribute readers for given resources
+
+```rb
+require 'rest_api_builder'
+
+module ReadmeExamples
+  module Resources
+    class Octocat
+      def orgs
+        RestClient::Request.execute(method: :get, url: 'https://api.github.com/users/octocat/orgs')
+      end
     end
   end
 end
 
-my_request = MyRequest.new
+class APIClient
+  include RestAPIBuilder::APIClient
 
-# Simple request:
-response = my_request.execute(base_url: "example.com", method: :get)
-response[:success] #=> true
-response[:status]  #=> 200
-response[:body]    #=> "<!doctype html>\n<html>..."
-response[:headers] #=> {:accept_ranges=>"bytes", ...}
-
-# Non-200 responses:
-response = my_request.execute(base_url: "example.com", path: "/foo", method: :get)
-response[:success] #=> false
-response[:status]  #=> 404
-response[:body]    #=> "<!doctype html>\n<html>..."
-
-# JSON requests:
-response = my_request.json_execute(base_url: "api.github.com", path: "/users/octocat/orgs", method: :get)
-response[:success] #=> true
-response[:body]    #=> []
-```
-
-## WebMock Expectations
-```rb
-require "rest_api_builder"
-require "webmock"
-require "rest_api_builder/webmock_request_expectations"
-
-WebMock.disable_net_connect!
-
-class MyRequest
-  include RestAPIBuilder
-
-  def execute(options)
-    handle_response do
-      RestClient::Request.execute(compose_request_options(**options))
-    end
-  end
-
-  def json_execute(options)
-    handle_json_response do
-      RestClient::Request.execute(compose_json_request_options(**options))
-    end
+  def initialize
+    define_resource_shortcuts(
+      [:octocat],
+      resources_scope: ReadmeExamples::Resources,
+      init_with: ->(resource_class) { resource_class.new }
+    )
   end
 end
 
-my_request = MyRequest.new
+GITHUB_API = APIClient.new
 
-Expectations = RestAPIBuilder::WebMockRequestExpectations
-
-# Simple expectation
-Expectations.expect_execute(base_url: "test.com", method: :get)
-response = my_request.execute(base_url: "test.com", method: :get)
-
-response[:success] #=> true
-response[:status]  #=> 200
-response[:body]    #=> ''
-response[:headers] #=> {}
-
-# Specifying expectation details with WebMock::Request methods
-Expectations
-  .expect_execute(base_url: "test.com", method: :get)
-  .to_return(status: 404, body: "not found")
-response = my_request.execute(base_url: "test.com", method: :get)
-
-response[:success] #=> false
-response[:status]  #=> 404
-response[:body]    #=> "not found"
-
-# Specifying expectation details with :request and :response options
-Expectations.expect_execute(
-  base_url: "test.com", 
-  method: :post, 
-  response: { body: 'hello' }, 
-  request: { body: { foo: "bar" } } # body will be matched partially using hash_including matcher
-)
-response = my_request.json_execute(base_url: "test.com", method: :post, body: { foo: "bar", bar: "baz" })
-response[:success] #=> true
-response[:body]    #=> 'hello'
-
-my_request.json_execute(base_url: "test.com", method: :post, body: {bar: "baz"}) # => Raises WebMock::NetConnectNotAllowedError
-
-# Using #expect_json_execute
-Expectations.expect_json_execute(
-  base_url: "test.com", 
-  method: :get, 
-  response: { body: {hi: 'hello'} }
-)
-response = my_request.execute(base_url: "test.com", method: :get)
-response[:success] #=> true
-response[:body]    #=> "{\"hi\":\"hello\"}"
+response = GITHUB_API.octocat.orgs
+response.body # => '[]'
+response.code # => 200
 ```
 
-## Request API
-### RestAPIBuilder#compose_request_options(options)
-Composes request options that can be passed to `RestClient::Request.execute`.
-#### Options:
-* **base_url**: Base URL of the request. Required.
-* **method**: HTTP method of the request(e.g :get, :post, :patch). Required.
-* **path**: Path to be appended to the :base_url. Optional.
-* **body**: Request Body. Optional.
-* **headers**: Request Headers. Optional.
-* **query**: Query hash to be appended to the resulting url. Optional.
+#### Accepted Options:
+| Name            | Description |
+|-----------------|-------------|
+| resources       | Array of resources to define shortcuts for |
+| resources_scope | Module or String(path to Module) within which resource classes are contained |
+| init_with       | Lambda which will be called with resource class. The result will be returned from the defined shortcut. **Note:** `init_with` lambda is only called once so resource class must be able to function as a singleton. |
 
-### RestAPIBuilder#compose_json_request_options(options)
-Accepts same options as `compose_request_options` but will also:
-- Add `Content-Type: 'application/json'` to request `headers`
-- Convert request `body` to JSON if it's present
+## RestAPIBuilder::WebMockRequestExpectations
+Optional wrapper around WebMock mocking interface with various improvements. This module is not not included when you `require 'rest_api_builder'` and you must require it explicitly.
 
-### RestAPIBuilder#handle_response(options, &block)
-Executes given block, expecting to receive `RestClient::Response` as a result.\
-Returns **plain ruby hash** with following keys: `:success`, `:status`, `:body`, `:headers`\
-This will also gracefully handle non-200 responses, but will throw on any error without defined response(e.g server timeout)
-
-#### Options:
-* **logger**: A `Logger` instance. If provided, will log response details as RestClient wont do this by default. Optional
-
-### RestAPIBuilder#handle_json_response(options, &block)
-Same as `#handle_response` but will also attempt to decode response `:body`, returning it as is if a parsing error occurrs
-
-### RestAPIBuilder#handle_response_error(options, &block)
-Low-level API, you can use this method if you want to work with the RestClient's responses directly without any conversions(e.g when using `block_response` or `raw_response` options of RestClient). This will handle errors in the same way as `#handle_response` does, but will not do anything else.\
-Returns ruby hash with `:success` and `:raw_response` keys.
-
-## WebMockRequestExpectations API
-### RestAPIBuilder::WebMockRequestExpectations.expect_execute(options)
-Defines a request expectation using WebMock's `stub_request`. Returns an instance of `WebMock::RequestStub` on which methods such as `with`, `to_return`, `to_timeout` can be called.
-
-#### Options:
-* **base_url**: Base URL of the request. Required.
-* **method**: HTTP method of the request(e.g :get, :post, :patch). Required.
-* **path**: Path to be appended to the :base_url. Optional.
-* **request**: request details which will be passed to `WebMock::RequestStub#with` if provided. If `query` or `body` keys are present and are hashes, they will be converted into WebMock's `hash_including` matcher. Optional
-* **response**: response details which will be passed to `WebMock::RequestStub#to_return` if provided. Optional
-
-### RestAPIBuilder::WebMockRequestExpectations.expect_json_execute(options)
-A convenience shortcut for `#json_execute` which will convert `request[:body]` to JSON if it's present
+### `#expect_execute(options)`
 
 ## License
 MIT
