@@ -224,21 +224,22 @@ module ReadmeExamples
       end
     end
   end
-end
 
-class APIClient
-  include RestAPIBuilder::APIClient
+  class APIClient
+    include RestAPIBuilder::APIClient
 
-  def initialize
-    define_resource_shortcuts(
-      [:octocat],
-      resources_scope: ReadmeExamples::Resources,
-      init_with: ->(resource_class) { resource_class.new }
-    )
+    def initialize
+      define_resource_shortcuts(
+        [:octocat],
+        resources_scope: ReadmeExamples::Resources,
+        init_with: ->(resource_class) { resource_class.new }
+      )
+    end
   end
 end
 
-GITHUB_API = APIClient.new
+
+GITHUB_API = ReadmeExamples::APIClient.new
 
 response = GITHUB_API.octocat.orgs
 response.body # => '[]'
