@@ -27,6 +27,8 @@ module RestAPIBuilder
       expectation
     end
 
+    private
+
     def add_request_expectations(expectation, request)
       if request[:body].is_a?(Hash)
         request = request.merge(body: hash_including(request[:body]))
