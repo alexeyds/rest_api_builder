@@ -1,7 +1,7 @@
 require "spec_helper"
 require "rest_api_builder"
 
-describe RestAPIBuilder::Request::RequestOptions do
+RSpec.describe RestAPIBuilder::Request::RequestOptions do
   include RestAPIBuilder::Request
 
   describe '#compose_request_options' do

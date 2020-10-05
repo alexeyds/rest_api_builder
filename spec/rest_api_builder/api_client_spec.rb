@@ -1,7 +1,7 @@
 require "spec_helper"
 require "rest_api_builder"
 
-describe RestAPIBuilder::APIClient do
+RSpec.describe RestAPIBuilder::APIClient do
   class RestAPIBuilder::APIClient::MyResource
     def hello
       'Hello'

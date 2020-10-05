@@ -3,7 +3,7 @@ require "rest_api_builder"
 require "./spec/support/example_request"
 require "rest_api_builder/webmock_request_expectations"
 
-describe "RestAPIBuilder README Examples" do
+RSpec.describe "RestAPIBuilder README Examples" do
   let(:my_request) { RestAPIBuilder::ExampleRequest.new }
 
   describe "Usage" do

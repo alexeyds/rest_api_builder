@@ -2,7 +2,7 @@ require "spec_helper"
 require "rest_api_builder"
 require "rest_api_builder/webmock_request_expectations"
 
-describe RestAPIBuilder::WebMockRequestExpectations::Expectations do
+RSpec.describe RestAPIBuilder::WebMockRequestExpectations::Expectations do
   include RestAPIBuilder::WebMockRequestExpectations
 
   let(:get_test) { { base_url: 'test.com', method: :get } }

@@ -1,7 +1,7 @@
 require "spec_helper"
 require "rest_api_builder/helpers/string_helper"
 
-describe RestAPIBuilder::Helpers::StringHelper do
+RSpec.describe RestAPIBuilder::Helpers::StringHelper do
   include RestAPIBuilder::Helpers::StringHelper
 
   describe '#camelize' do

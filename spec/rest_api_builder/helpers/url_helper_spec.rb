@@ -1,7 +1,7 @@
 require "spec_helper"
 require "rest_api_builder/helpers/url_helper"
 
-describe RestAPIBuilder::Helpers::UrlHelper do
+RSpec.describe RestAPIBuilder::Helpers::UrlHelper do
   include RestAPIBuilder::Helpers::UrlHelper
 
   describe '#full_url' do
