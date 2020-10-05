@@ -3,7 +3,8 @@ require "rest_api_builder"
 require "rest_api_builder/webmock_request_expectations"
 
 describe RestAPIBuilder::WebMockRequestExpectations::Expectations do
-  let(:expectations) { RestAPIBuilder::WebMockRequestExpectations }
+  include RestAPIBuilder::WebMockRequestExpectations
+
   let(:get_test) { { base_url: 'test.com', method: :get } }
   let(:post_test) { { base_url: 'test.com', method: :post } }
 
@@ -15,7 +16,7 @@ describe RestAPIBuilder::WebMockRequestExpectations::Expectations do
 
   describe "#expect_request" do
     it 'defines basic expectation for request' do
-      expectations.expect_execute(**get_test)
+      expect_execute(**get_test)
       response = execute(**get_test)
 
       expect(response.code).to eq(200)
@@ -23,21 +24,21 @@ describe RestAPIBuilder::WebMockRequestExpectations::Expectations do
     end
 
     it 'returns expectation' do
-      expectations.expect_execute(**get_test).to_return(body: 'hi')
+      expect_execute(**get_test).to_return(body: 'hi')
       response = execute(**get_test)
 
       expect(response.body).to eq('hi')
     end
 
     it 'has :path parameter' do
-      expectations.expect_execute(**get_test, path: '/orders')
+      expect_execute(**get_test, path: '/orders')
       response = execute(**get_test, path: '/orders')
 
       expect(response.code).to eq(200)
     end
 
     it 'defines request expectations based on :request parameter' do
-      expectations.expect_execute(**post_test, request: { body: 'hi' })
+      expect_execute(**post_test, request: { body: 'hi' })
 
       expect do
         execute(**post_test)
@@ -45,42 +46,42 @@ describe RestAPIBuilder::WebMockRequestExpectations::Expectations do
     end
 
     it 'defines response details based on :response paramter' do
-      expectations.expect_execute(**get_test, response: { body: 'hi' })
+      expect_execute(**get_test, response: { body: 'hi' })
       response = execute(**get_test)
 
       expect(response.body).to eq('hi')
     end
 
     it 'works if :request and response are empty hashes' do
-      expectations.expect_execute(**get_test, request: {}, response: {})
+      expect_execute(**get_test, request: {}, response: {})
       response = execute(**get_test)
 
       expect(response.body).to eq('')
     end
 
     it 'only partially matches expected body hash' do
-      expectations.expect_execute(**post_test, request: { body: { a: '1' } })
+      expect_execute(**post_test, request: { body: { a: '1' } })
       response = execute(**post_test, body: { a: 1, b: 2 })
 
       expect(response.code).to eq(200)
     end
 
     it 'only partially matches expected query hash' do
-      expectations.expect_execute(**post_test, request: { query: { foo: 'bar' } })
+      expect_execute(**post_test, request: { query: { foo: 'bar' } })
       response = execute(**post_test, query: { foo: 'bar', b: 2 })
 
       expect(response.code).to eq(200)
     end
 
     it 'converts query values to string' do
-      expectations.expect_execute(**get_test, request: { query: { foo: 1 } })
+      expect_execute(**get_test, request: { query: { foo: 1 } })
       response = execute(**get_test, query: { foo: 1 })
 
       expect(response.code).to eq(200)
     end
 
     it 'works if query/body are part of webmock API' do
-      expectations.expect_execute(
+      expect_execute(
         **post_test,
         request: { query: hash_including({ foo: 'bar' }), body: hash_including({ a: '1' }) }
       )
@@ -90,7 +91,7 @@ describe RestAPIBuilder::WebMockRequestExpectations::Expectations do
     end
 
     it 'works with regex path' do
-      expectations.expect_execute(**get_test, path: %r{/test/\d+})
+      expect_execute(**get_test, path: %r{/test/\d+})
       response = execute(**get_test, path: '/test/31')
 
       expect(response.code).to eq(200)
@@ -99,7 +100,7 @@ describe RestAPIBuilder::WebMockRequestExpectations::Expectations do
 
   describe '#expect_json_execute' do
     it 'behaves like #expect_execute' do
-      expectations.expect_json_execute(**get_test)
+      expect_json_execute(**get_test)
       response = execute(**get_test)
 
       expect(response.code).to eq(200)
@@ -107,14 +108,14 @@ describe RestAPIBuilder::WebMockRequestExpectations::Expectations do
     end
 
     it 'encodes response body' do
-      expectations.expect_json_execute(**get_test, response: { body: { a: 1 } })
+      expect_json_execute(**get_test, response: { body: { a: 1 } })
       response = execute(**get_test)
 
       expect(response.body).to eq({ 'a' => 1 }.to_json)
     end
 
     it 'does not modify response details' do
-      expectations.expect_json_execute(**get_test, response: { body: { created: true }, status: 202 })
+      expect_json_execute(**get_test, response: { body: { created: true }, status: 202 })
       response = execute(**get_test)
 
       expect(response.body).to eq({ 'created' => true }.to_json)
@@ -122,7 +123,7 @@ describe RestAPIBuilder::WebMockRequestExpectations::Expectations do
     end
 
     it 'does nothing if response has no body' do
-      expectations.expect_json_execute(**get_test, response: { status: 204 })
+      expect_json_execute(**get_test, response: { status: 204 })
       response = execute(**get_test)
 
       expect(response.body).to eq('')
