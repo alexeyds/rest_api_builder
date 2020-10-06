@@ -288,7 +288,7 @@ expect_execute(
   path: '/users/octocat',
   method: :post,
   # matches request body and query hashes partially by default
-  request: { body: {foo: 'bar'}, query: {a: 1, b: 2} },
+  request: { body: {foo: 'bar'}, query: {a: 1} },
   response: { body: 'hello' }
 )
 
