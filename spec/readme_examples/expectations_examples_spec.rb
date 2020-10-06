@@ -31,6 +31,7 @@ RSpec.describe "RestAPIBuilder::WebMockRequestExpectations README" do
         base_url: 'https://api.github.com',
         path: '/users/octocat',
         method: :post,
+        # matches request body and query hashes partially by default
         request: { body: { foo: 'bar' }, query: { a: 1, b: 2 } },
         response: { body: 'hello' }
       )

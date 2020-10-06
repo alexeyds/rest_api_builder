@@ -125,6 +125,7 @@ RSpec.describe "RestAPIBuilder::Request README", :http_request do
 
       expect(request.url).to eq("https://api.github.com/users/octocat/orgs?foo=bar")
       expect(request.headers).to eq({ content_type: "foobar" })
+      expect(request.payload.size).to eq(5)
     end
   end
 

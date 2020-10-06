@@ -169,9 +169,9 @@ result = handle_response_error do
 end
 request = result[:raw_response].request
 
-request.url          # => "https://api.github.com/users/octocat/orgs?foo=bar"
-request.headers      # => {:content_type=>"foobar"}
-request.payload.size # => 5 
+request.url     # => "https://api.github.com/users/octocat/orgs?foo=bar"
+request.headers # => {:content_type=>"foobar"}
+request.payload # => <RestClient::Payload 'Hello'>
 ```
 
 #### Accepted Options:
@@ -204,8 +204,8 @@ result = handle_response_error do
 end
 request = result[:raw_response].request
 
-request.headers      # => {:content_type=>:json}
-request.payload.size # => 7
+request.headers # => {:content_type=>:json}
+request.payload # => <RestClient::Payload "{\"a\":1}">
 ```
 
 ## RestAPIBuilder::APIClient
@@ -287,7 +287,8 @@ expect_execute(
   base_url: 'https://api.github.com',
   path: '/users/octocat',
   method: :post,
-  request: { body: {foo: 'bar'}, query: {a: 1, b: 2} }, # matches request body and query hashes partially by default
+  # matches request body and query hashes partially by default
+  request: { body: {foo: 'bar'}, query: {a: 1, b: 2} },
   response: { body: 'hello' }
 )
 
@@ -310,7 +311,7 @@ response.body # => 'hello'
 | base_url | Base URL of the request expectation. Required. |
 | path     | HTTP method of the request. Required. |
 | method   | Path to be appended to `base_url`. Regular expressions are also supported. Optional. |
-| request  | Hash of options which will be passed to WebMock's `with` methods with following changes: `body` hash is converted to `hash_including` expectation and `query` hash values are transformed to strings and then it's converted into `hash_including` expectation. Optional  |
+| request  | Hash of options which will be passed to WebMock's `with` method with following changes: `body` hash is converted to `hash_including` expectation and `query` hash values are transformed to strings and then it's converted into `hash_including` expectation. Optional  |
 | response | Hash of options which will be passed to WebMock's `to_return` method unchanged. Optional |
 
 ### `#expect_json_execute(options)`
