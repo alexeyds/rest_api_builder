@@ -18,6 +18,8 @@ gem install rest_api_builder
 ## RestAPIBuilder::Request
 Main RestAPIBuilder module which includes various helper methods for parsing RestClient responses, catching errors and composing request details. `handle_*` and `compose_*` methods are intended to be used in conjunction, but you can use any of them in any combination without relying on the rest.
 
+If you prefer to access these methods directly without including `RestAPIBuilder::Request`, they are available as module_function methods in the corresponding modules: `RestAPIBuilder::Request::RequestOptions` and `RestAPIBuilder::Request::ResponseHandler`
+
 ```rb
 # Basic usage
 require 'rest_api_builder'
@@ -255,6 +257,8 @@ response.code # => 200
 
 ## RestAPIBuilder::WebMockRequestExpectations
 Optional wrapper around WebMock mocking interface with various improvements. This module must be required explicitly and expects [WebMock](https://github.com/bblimke/webmock) to be installed as a dependency in your project.
+
+If you prefer to access these methods directly without including `RestAPIBuilder::WebMockRequestExpectations`, they are available as module_function methods in the `RestAPIBuilder::WebMockRequestExpectations::Expectations` module.
 
 ### `#expect_execute(options)`
 Defines a request expectation using WebMock's `stub_request`.
