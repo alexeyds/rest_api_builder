@@ -8,7 +8,7 @@ RestClient is great, but after building a few API clients with it you will almos
 - Handling and extracting details from non-200 responses
 - Creating testing interfaces for your API clients
 
-This library tries to solve these and similar issues by providing a set of self-contained helper methods to improve on [rest-client](https://github.com/rest-client/rest-client) features including an optional [webmock](https://github.com/bblimke/webmock) testing interface.
+This library tries to solve these and similar issues by providing a set of self-contained helper methods to improve on [rest-client](https://github.com/rest-client/rest-client) features with an optional [WebMock](https://github.com/bblimke/webmock) testing interface.
 
 ## Installation
 ```
@@ -16,7 +16,7 @@ gem install rest_api_builder
 ```
 
 ## RestAPIBuilder::Request
-Main RestAPIBuilder module which includes various helper methods for parsing RestClient responses, catching errors and composing request options. `handle_*` and `compose_*` methods are intended to be used in conjunction, but you can use any of them in any combination without relying on the rest.
+Main RestAPIBuilder module which includes various helper methods for parsing RestClient responses, catching errors and composing request details. `handle_*` and `compose_*` methods are intended to be used in conjunction, but you can use any of them in any combination without relying on the rest.
 
 ```rb
 # Basic usage
@@ -246,17 +246,100 @@ response.body # => '[]'
 response.code # => 200
 ```
 
-#### Accepted Options:
+#### Accepted Arguments:
 | Name            | Description |
 |-----------------|-------------|
 | resources       | Array of resources to define shortcuts for |
 | resources_scope | Module or String(path to Module) within which resource classes are contained |
-| init_with       | Lambda which will be called with resource class. The result will be returned from the defined shortcut. **Note:** `init_with` lambda is only called once so resource class must be able to function as a singleton. |
+| init_with       | Lambda which will be called for each resource class. The result will be returned from the defined shortcut. **Note:** `init_with` lambda is only called once so resource class must be able to function as a singleton. |
 
 ## RestAPIBuilder::WebMockRequestExpectations
-Optional wrapper around WebMock mocking interface with various improvements. This module is not not included when you `require 'rest_api_builder'` and you must require it explicitly.
+Optional wrapper around WebMock mocking interface with various improvements. This module must be required explicitly and expects [WebMock](https://github.com/bblimke/webmock) to be installed as a dependency in your project.
 
 ### `#expect_execute(options)`
+Defines a request expectation using WebMock's `stub_request`.
+```rb
+require 'rest_api_builder'
+require 'rest_api_builder/webmock_request_expectations'
+include RestAPIBuilder::Request
+include RestAPIBuilder::WebMockRequestExpectations
+
+# basic usage with regular webmock interface
+expect_execute(
+  base_url: 'https://api.github.com',
+  path: '/users/octocat/orgs',
+  method: :post
+).with(body: {foo: 'bar'}).to_return(body: '[hello]')
+
+response = RestClient::Request.execute(
+  compose_request_options(
+    base_url: 'https://api.github.com',
+    path: '/users/octocat/orgs',
+    method: :post,
+    body: {foo: 'bar'}
+  )
+)
+
+response.body # => '[hello]'
+
+# using expect_execute's request and response options
+expect_execute(
+  base_url: 'https://api.github.com',
+  path: '/users/octocat',
+  method: :post,
+  request: { body: {foo: 'bar'}, query: {a: 1, b: 2} }, # matches request body and query hashes partially by default
+  response: { body: 'hello' }
+)
+
+response = RestClient::Request.execute(
+  compose_request_options(
+    base_url: 'https://api.github.com',
+    path: '/users/octocat',
+    method: :post,
+    body: { foo: 'bar', bar: 'baz' }, 
+    query: { a: 1, b: 2 }
+  )
+)
+
+response.body # => 'hello'
+```
+
+#### Accepted Options:
+| Name     | Description |
+|----------|-------------|
+| base_url | Base URL of the request expectation. Required. |
+| path     | HTTP method of the request. Required. |
+| method   | Path to be appended to `base_url`. Regular expressions are also supported. Optional. |
+| request  | Hash of options which will be passed to WebMock's `with` methods with following changes: `body` hash is converted to `hash_including` expectation and `query` hash values are transformed to strings and then it's converted into `hash_including` expectation. Optional  |
+| response | Hash of options which will be passed to WebMock's `to_return` method unchanged. Optional |
+
+### `#expect_json_execute(options)`
+Same as `expect_execute` but will also call JSON encode on `response.body`(if one is provided).
+
+```rb
+require 'rest_api_builder'
+require 'rest_api_builder/webmock_request_expectations'
+include RestAPIBuilder::Request
+include RestAPIBuilder::WebMockRequestExpectations
+
+expect_json_execute(
+  base_url: 'https://api.github.com',
+  path: '/users/octocat/orgs',
+  method: :get,
+  response: { body: { foo: 'bar' } }
+)
+
+response = RestClient::Request.execute(
+  compose_request_options(
+    base_url: 'https://api.github.com',
+    path: '/users/octocat/orgs',
+    method: :get
+  )
+)
+
+response.body # => "{\"foo\":\"bar\"}"
+```
+
 
 ## License
 MIT

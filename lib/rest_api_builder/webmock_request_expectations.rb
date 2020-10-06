@@ -1,4 +1,3 @@
-require 'webmock'
 require 'rest_api_builder/webmock_request_expectations/expectations'
 
 module RestAPIBuilder
