@@ -1,15 +1,10 @@
+require 'forwardable'
 require 'rest_api_builder/webmock_request_expectations/expectations'
 
 module RestAPIBuilder
   module WebMockRequestExpectations
-    module_function
+    extend Forwardable
 
-    def expect_json_execute(**options)
-      Expectations.expect_json_execute(**options)
-    end
-
-    def expect_execute(**options)
-      Expectations.expect_execute(**options)
-    end
+    def_delegators Expectations, :expect_json_execute, :expect_execute
   end
 end
